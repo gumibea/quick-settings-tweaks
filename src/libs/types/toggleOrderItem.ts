@@ -4,6 +4,11 @@ import {
     type QuickMenuToggle,
 } from "resource:///org/gnome/shell/ui/quickSettings.js"
 
+const DND_TOGGLE_CONSTRUCTORS = new Set([
+	"DoNotDisturbToggle",
+	"DndQuickToggle",
+])
+
 export interface ToggleOrderItem {
     gtypeName?: string
     constructorName?: string
@@ -34,8 +39,16 @@ export namespace ToggleOrderItem {
         if (item.nonOrdered) return false
         if (item.gtypeName && GObject.type_name_from_instance(toggle as any) != item.gtypeName)
             return false
-        if (item.constructorName && toggle.constructor.name != item.constructorName)
-            return false
+        if (item.constructorName) {
+			const tName = toggle.constructor.name
+			const orderDnd = DND_TOGGLE_CONSTRUCTORS.has(item.constructorName)
+			const toggleDnd = DND_TOGGLE_CONSTRUCTORS.has(tName)
+			if (orderDnd) {
+				if (!toggleDnd) return false
+			} else if (tName != item.constructorName) {
+				return false
+			}
+		}
         if (item.cachedTitleRegex && toggle.title.match(item.cachedTitleRegex) == null)
             return false
         if (!item.gtypeName && !item.constructorName && !item.cachedTitleRegex) return false

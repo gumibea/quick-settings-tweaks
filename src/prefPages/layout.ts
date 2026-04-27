@@ -24,7 +24,7 @@ import {
 	removeRowMinHeight,
 	DropdownRow,
 } from "../libs/prefs/components.js"
-import { SystemIndicatorOrderItem } from "../libs/types/systemIndicatorOrderItem.js"
+import { DND_INDICATOR_GTYPES, SystemIndicatorOrderItem } from "../libs/types/systemIndicatorOrderItem.js"
 import { QuickSettingsOrderItem } from "../libs/types/quickSettingsOrderItem.js"
 
 // #region OrderGroup
@@ -539,7 +539,9 @@ class SystemIndicatorOrderInfo extends OrderInfo<SystemIndicatorOrderItem> {
 	getSystemNames(): Map<string, string> {
 		const IGNORE_XGETTEXT=_
 		return new Map<string, string>([
-			[ "Gjs_toggle_dndQuickToggle_DndIndicator", _("Do Not Disturb") ],
+			...[...DND_INDICATOR_GTYPES].map(
+				(g): [string, string] => [g, _("Do Not Disturb")]
+			),
 			[ "Gjs_status_remoteAccess_RemoteAccessApplet", _("Remote Access Applet") ],
 			[ "Gjs_status_camera_Indicator", _("Camera") ],
 			[ "Gjs_status_volume_InputIndicator", _("Volume Input") ],
@@ -556,7 +558,9 @@ class SystemIndicatorOrderInfo extends OrderInfo<SystemIndicatorOrderItem> {
 	}
 	getSystemIcons(): Map<string, string> {
 		return new Map<string, string>([
-			[ "Gjs_toggle_dndQuickToggle_DndIndicator", "notifications-disabled-symbolic" ],
+			...[...DND_INDICATOR_GTYPES].map(
+				(g): [string, string] => [g, "notifications-disabled-symbolic"]
+			),
 			[ "Gjs_status_remoteAccess_RemoteAccessApplet", "preferences-desktop-remote-desktop" ],
 			[ "Gjs_status_camera_Indicator", "camera-photo-symbolic" ],
 			[ "Gjs_status_volume_InputIndicator", "microphone-sensitivity-high-symbolic" ],
@@ -607,7 +611,7 @@ class SystemIndicatorOrderInfo extends OrderInfo<SystemIndicatorOrderItem> {
 	}
 	canHide(item: SystemIndicatorOrderItem): boolean {
 		if (!item.isSystem) return true
-		return item.gtypeName != "Gjs_toggle_dndQuickToggle_DndIndicator"
+		return !item.gtypeName || !DND_INDICATOR_GTYPES.has(item.gtypeName)
 	}
 	canEdit(item: SystemIndicatorOrderItem): boolean {
 		return !item.isSystem && !item.nonOrdered
@@ -619,7 +623,7 @@ class SystemIndicatorOrderInfo extends OrderInfo<SystemIndicatorOrderItem> {
 		return SystemIndicatorOrderItem.create(friendlyName)
 	}
 	shouldShow(item: SystemIndicatorOrderItem): boolean {
-		if (item.gtypeName == "Gjs_toggle_dndQuickToggle_DndIndicator") {
+		if (item.gtypeName && DND_INDICATOR_GTYPES.has(item.gtypeName)) {
 			return (
 				this.settings.get_string("dnd-quick-toggle-indicator-position") == "system-tray"
 			)
