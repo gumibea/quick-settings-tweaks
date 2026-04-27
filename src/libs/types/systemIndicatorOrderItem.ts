@@ -3,6 +3,12 @@ import {
     type SystemIndicator,
 } from "resource:///org/gnome/shell/ui/quickSettings.js"
 
+/** GNOME 48: extension DnD; GNOME 49: shell `ui/status/doNotDisturb.js` */
+export const DND_INDICATOR_GTYPES = new Set([
+	"Gjs_toggle_dndQuickToggle_DndIndicator",
+	"Gjs_status_doNotDisturb_Indicator",
+])
+
 export interface SystemIndicatorOrderItem {
     gtypeName?: string
     constructorName?: string
@@ -28,8 +34,16 @@ export namespace SystemIndicatorOrderItem {
     }
     export function indicatorMatch(item: SystemIndicatorOrderItem, indicator: SystemIndicator): boolean {
         if (item.nonOrdered) return false
-        if (item.gtypeName && GObject.type_name_from_instance(indicator as any) != item.gtypeName)
-            return false
+        if (item.gtypeName) {
+			const t = GObject.type_name_from_instance(indicator as any)
+			const orderIsDnd = DND_INDICATOR_GTYPES.has(item.gtypeName)
+			const indIsDnd = DND_INDICATOR_GTYPES.has(t)
+			if (orderIsDnd) {
+				if (!indIsDnd) return false
+			} else if (t != item.gtypeName) {
+				return false
+			}
+		}
         if (item.constructorName && indicator.constructor.name != item.constructorName)
             return false
         return true

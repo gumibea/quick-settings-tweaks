@@ -314,7 +314,7 @@
       <default><![CDATA[
         [
           { 'nonOrdered': <true>, 'hide': <false> },
-          { 'hide': <false>, 'isSystem': <true>, 'gtypeName': <'Gjs_toggle_dndQuickToggle_DndIndicator'> },
+          { 'hide': <false>, 'isSystem': <true>, 'gtypeName': <'Gjs_status_doNotDisturb_Indicator'> },
           { 'hide': <false>, 'isSystem': <true>, 'gtypeName': <'Gjs_status_remoteAccess_RemoteAccessApplet'> },
           { 'hide': <false>, 'isSystem': <true>, 'gtypeName': <'Gjs_status_camera_Indicator'> },
           { 'hide': <false>, 'isSystem': <true>, 'gtypeName': <'Gjs_status_volume_InputIndicator'> },
@@ -380,7 +380,6 @@
           { 'hide': <false>, 'isSystem': <true>, 'constructorName': <'KeyboardBrightnessToggle'> },
           { 'hide': <false>, 'isSystem': <true>, 'constructorName': <'RfkillToggle'> },
           { 'hide': <false>, 'isSystem': <true>, 'constructorName': <'RotationToggle'> },
-          { 'hide': <false>, 'isSystem': <true>, 'constructorName': <'DndQuickToggle'> },
           { 'hide': <false>, 'isSystem': <true>, 'constructorName': <'UnsafeQuickToggle'> },
           { 'nonOrdered': <true>, 'hide': <false> }
         ]

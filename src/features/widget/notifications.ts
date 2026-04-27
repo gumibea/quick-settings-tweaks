@@ -1,9 +1,9 @@
 import GObject from "gi://GObject"
 import St from "gi://St"
 import Clutter from "gi://Clutter"
+import Gio from "gi://Gio"
 import * as MessageList from "resource:///org/gnome/shell/ui/messageList.js"
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js"
-import { type DoNotDisturbSwitch } from "resource:///org/gnome/shell/ui/calendar.js"
 import { FeatureBase, type SettingLoader } from "../../libs/shell/feature.js"
 import { StyledScroll } from "../../libs/shell/styler.js"
 import Global from "../../global.js"
@@ -121,18 +121,35 @@ class NativeControl extends St.BoxLayout {
 	_clearButton: St.Button
 	_dndButton: St.Button
 	_dndLabel: St.Label
-	_dndSwitch: DoNotDisturbSwitch
+	_dndSwitch: St.Switch
+	_dndNotifSettings: Gio.Settings
+	_dndBannersChangedId: number
+	_dndFromRemote: boolean = false
 
 	_init() {
-		// See : https://github.com/GNOME/gnome-shell/blob/934dbe549567f87d7d6deb6f28beaceda7da1d46/js/ui/calendar.js#L979
+		// DND: GNOME 49+ uses org.gnome.desktop.notifications (show-banners) instead of
+		// calendar.DoNotDisturbSwitch; mirror ui/status/doNotDisturb.js
 		super._init({
 			style_class: "QSTWEAKS-native-controls",
 		} as Partial<St.BoxLayout.ConstructorProps>)
 
-		// DND Switch
-		this._dndSwitch = new (Global.MessageList._dndSwitch.constructor as any)() // Calendar.DoNotDisturbSwitch();
+		// DND switch (same widget family as the old DoNotDisturbSwitch; state ↔ !show-banners)
+		this._dndNotifSettings = new Gio.Settings({ schema_id: "org.gnome.desktop.notifications" })
+		this._dndSwitch = new St.Switch({ style_class: "toggle-switch", y_align: Clutter.ActorAlign.CENTER })
 		this._dndSwitch.style_class += " QSTWEAKS-native-dnd-switch"
-		
+		this._dndBannersChangedId = this._dndNotifSettings.connect("changed::show-banners", () => {
+			this._dndFromRemote = true
+			this._dndSwitch.state = !this._dndNotifSettings.get_boolean("show-banners")
+			this._dndFromRemote = false
+		})
+		this._dndSwitch.connect("notify::state", () => {
+			if (this._dndFromRemote) return
+			this._dndNotifSettings.set_boolean("show-banners", !this._dndSwitch.state)
+		})
+		this._dndFromRemote = true
+		this._dndSwitch.state = !this._dndNotifSettings.get_boolean("show-banners")
+		this._dndFromRemote = false
+
 		// DND Label
 		this._dndLabel = new St.Label({
 			style_class: "QSTWEAKS-native-dnd-text",
@@ -152,6 +169,10 @@ class NativeControl extends St.BoxLayout {
 			this._dndButton, "checked",
 			GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
 		this.add_child(this._dndButton)
+		this.connect("destroy", () => {
+			if (this._dndBannersChangedId)
+				this._dndNotifSettings.disconnect(this._dndBannersChangedId)
+		})
 
 		// Clear Button
 		this._clearButton = new St.Button({

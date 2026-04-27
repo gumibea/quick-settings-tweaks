@@ -544,8 +544,7 @@ namespace ProgressControl {
 
 // #region MediaItem
 class MediaItem extends MessageList.Message {
-	// Gnome 48 doesn't exports MediaMessage, so we should implement it
-	// (i have no idea why, backward compatibility killer)
+	// Shell no longer exports a usable MediaMessage for this use case; implement it here
 	_player: Player
 	_cachedColors: Map<string, Promise<void | [number, number, number]>>
 	_options: MediaItem.Options
