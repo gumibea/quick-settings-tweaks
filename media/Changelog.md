@@ -12,6 +12,7 @@
 
 - Drop gnome 48 support
 - Add support for gnome 49
+- Add support for gnome 50
 - Remove dnd quick toggle (now gnome support it natively)
 - Add 'overlay-menu-overflow-anchor' option for adjust overlay menu box overflowing
 
@@ -19,6 +20,8 @@
 
 - VolumeMixer widget
   - Fix already been disposed warning
+- System Indicator
+  - Fix privacy indicator style compatibility with gnome 50
 
 # 2.2-stable
 <!-- @BuildNumber: 9 -->

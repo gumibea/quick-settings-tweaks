@@ -190,6 +190,13 @@ class StreamSlider extends QuickSlider {
 	_updateAllowAmplified() {
 		this._allowAmplified = this._soundSettings.get_boolean(ALLOW_AMPLIFIED_VOLUME_KEY)
 		this.slider.maximumValue = this._allowAmplified ? this.getMaxLevel() : 1
+		if (
+			typeof (this.slider as any).clearMarks == "function"
+			&& typeof (this.slider as any).addMark == "function"
+		) {
+			(this.slider as any).clearMarks()
+			if (this._allowAmplified) (this.slider as any).addMark(1)
+		}
 		if (this._stream) this._updateSlider()
 	}
 
