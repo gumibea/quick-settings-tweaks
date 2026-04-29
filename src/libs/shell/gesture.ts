@@ -19,10 +19,9 @@ export abstract class Drag extends St.Bin {
 		this._dragging = true
 		this._dragIsClick = true
 		this._dragStartCoords = event.get_coords()
-		this._grabbedDevice = event.get_device()
+		this._grabbedDevice = (event as any).get_device()
 		this._grabbedSequence = event.get_event_sequence()
 
-		// @ts-expect-error Types not implemented
 		this._grab = global.stage.grab(this)
 
 		const dragEvent: Drag.Event = event as Drag.Event

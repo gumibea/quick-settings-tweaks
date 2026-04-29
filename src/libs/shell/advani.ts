@@ -14,7 +14,7 @@ export interface EasingParams {
 
 // AdvAni ease function params
 export interface AdvEasingParams extends EasingParams {
-    mode: Clutter.AnimationMode | AdvAnimationMode,
+    mode: Clutter.AnimationMode | AdvAnimationMode | ModeDefine,
 }
 
 // AdvAni ease mode define type
@@ -62,7 +62,7 @@ export const AdvAnimationModeDefines = [
 export function ease(actor: Clutter.Actor, params: AdvEasingParams) {
     // Get mode defines
     let modeDefine: ModeDefine|null
-    if (params.mode && params.mode > Clutter.AnimationMode.ANIMATION_LAST) {
+    if (typeof params.mode == "number" && params.mode > Clutter.AnimationMode.ANIMATION_LAST) {
         modeDefine = AdvAnimationModeDefines[params.mode - AdvAnimationMode.LowBackover]
         params.mode = modeDefine.mode
     } else if ((typeof params.mode == "object") && ((params.mode as any) instanceof ModeDefine)) {
@@ -71,7 +71,7 @@ export function ease(actor: Clutter.Actor, params: AdvEasingParams) {
     }
 
     // Run gnome ease function
-    actor.ease(params)
+    actor.ease(params as EasingParams)
     if (!modeDefine) return
 
     // Adjust bezier progress if option exist

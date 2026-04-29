@@ -759,7 +759,7 @@ export function RgbColorRow({
 	value,
 	useAlpha,
 }: RgbColorRow.Options): Adw.ActionRow {
-	if (bind) value ??= settings.get_value(bind).recursiveUnpack()
+	if (bind) value ??= settings.get_value(bind).recursiveUnpack() as RgbColorRow.Color
 
 	const row = new Adw.ActionRow({
 		title: title ?? "",
@@ -814,7 +814,7 @@ export function RgbColorRow({
 		if (action) action(arr)
 	})
 	if (bind) settings.connect(`changed::${bind}`, ()=>{
-		const newValue = settings.get_value(bind).recursiveUnpack()
+		const newValue = settings.get_value(bind).recursiveUnpack() as RgbColorRow.Color
 		if (
 			newValue[0] != value[0]
 			|| newValue[1] != value[1]
