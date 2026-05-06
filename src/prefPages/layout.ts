@@ -170,7 +170,7 @@ function OrderGroup<T extends OrderInfo.Base>({
 			// Create Up & Down button
 			const updown = UpDownButton({
 				settings: info.settings,
-				sensitiveBind: "toggles-layout-enabled",
+				sensitiveBind,
 				action: (direction)=>{
 					moveItem(newItem, direction == UpDownButton.Direction.Up ? -1 : 1)
 				}
@@ -780,22 +780,25 @@ export const LayoutPage = GObject.registerClass({
 			SwitchRow({
 				bind: "toggles-layout-enabled",
 				settings,
-				onDetailed: ()=>{
-					Dialog({
-						window,
-						childrenRequest: (page, dialog) => [OrderGroup({
-							page,
-							dialog,
-							bind: "toggles-layout-order",
-							sensitiveBind: "toggles-layout-enabled",
-							info: new ToggleOrderInfo(settings),
-						})],
-						title: _("Adjust quick toggles layout"),
-					})
-				},
+				title: _("Customize quick toggles order"),
+				subtitle: _("Enable reordering and hiding for quick setting toggles"),
+				experimental: true,
+			}),
+			DialogRow({
+				settings,
+				window,
+				sensitiveBind: "toggles-layout-enabled",
 				title: _("Ordering and Hiding"),
 				subtitle: _("Reorder and hide quick toggles"),
+				dialogTitle: _("Adjust quick toggles layout"),
 				experimental: true,
+				childrenRequest: (page, dialog) => [OrderGroup({
+					page,
+					dialog,
+					bind: "toggles-layout-order",
+					sensitiveBind: "toggles-layout-enabled",
+					info: new ToggleOrderInfo(settings),
+				})],
 			}),
 		])
 
@@ -831,22 +834,25 @@ export const LayoutPage = GObject.registerClass({
 			SwitchRow({
 				settings,
 				bind: "system-indicator-layout-enabled",
-				onDetailed: ()=>{
-					Dialog({
-						window,
-						title: _("Adjust system indicators"),
-						childrenRequest: (page, dialog) => [OrderGroup({
-							page,
-							dialog,
-							bind: "system-indicator-layout-order",
-							sensitiveBind: "system-indicator-layout-enabled",
-							info: new SystemIndicatorOrderInfo(settings),
-						})],
-					})
-				},
+				title: _("Customize indicator order"),
+				subtitle: _("Enable reordering and hiding for icons next to quick settings"),
+				experimental: true,
+			}),
+			DialogRow({
+				settings,
+				window,
+				sensitiveBind: "system-indicator-layout-enabled",
 				title: _("Ordering and Hiding"),
 				subtitle: _("Reorder and hide system indicators"),
+				dialogTitle: _("Adjust system indicators"),
 				experimental: true,
+				childrenRequest: (page, dialog) => [OrderGroup({
+					page,
+					dialog,
+					bind: "system-indicator-layout-order",
+					sensitiveBind: "system-indicator-layout-enabled",
+					info: new SystemIndicatorOrderInfo(settings),
+				})],
 			}),
 		])
 
