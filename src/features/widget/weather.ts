@@ -4,7 +4,6 @@ import GLib from "gi://GLib"
 import Pango from "gi://Pango"
 import St from "gi://St"
 import * as Main from "resource:///org/gnome/shell/ui/main.js"
-/// @ts-expect-error
 import {formatTime} from "resource:///org/gnome/shell/misc/dateUtils.js"
 import { WeatherClient } from "resource:///org/gnome/shell/misc/weather.js"
 import GWeather from "gi://GWeather"

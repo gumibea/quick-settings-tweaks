@@ -59,17 +59,17 @@ export class SettingLoader {
 	}
 	loadValue<T>(key: string): T {
 		this.push(key)
-		return Global.Settings.get_value(key).recursiveUnpack()
+		return Global.Settings.get_value(key).recursiveUnpack() as T
 	}
 	loadRgb(key: string): Rgb|null {
 		this.push(key)
-		const color = Global.Settings.get_value(key).recursiveUnpack()
+		const color = Global.Settings.get_value(key).recursiveUnpack() as Rgb
 		if (!color.length) return null
 		return color
 	}
 	loadRgba(key: string): Rgba|null {
 		this.push(key)
-		const color = Global.Settings.get_value(key).recursiveUnpack()
+		const color = Global.Settings.get_value(key).recursiveUnpack() as Rgba
 		if (!color.length) return null
 		return color
 	}

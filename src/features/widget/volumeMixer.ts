@@ -11,6 +11,7 @@ import { QuickSlider } from "resource:///org/gnome/shell/ui/quickSettings.js"
 import * as Main from "resource:///org/gnome/shell/ui/main.js"
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js"
 import * as Volume from "resource:///org/gnome/shell/ui/status/volume.js"
+import { PopupAnimation } from "resource:///org/gnome/shell/ui/boxpointer.js"
 import { FeatureBase, type SettingLoader } from "../../libs/shell/feature.js"
 import { StyledScroll } from "../../libs/shell/styler.js"
 import { updateMenuSeparators } from "../../libs/shell/quickSettingsUtils.js"
@@ -190,6 +191,13 @@ class StreamSlider extends QuickSlider {
 	_updateAllowAmplified() {
 		this._allowAmplified = this._soundSettings.get_boolean(ALLOW_AMPLIFIED_VOLUME_KEY)
 		this.slider.maximumValue = this._allowAmplified ? this.getMaxLevel() : 1
+		if (
+			typeof (this.slider as any).clearMarks == "function"
+			&& typeof (this.slider as any).addMark == "function"
+		) {
+			(this.slider as any).clearMarks()
+			if (this._allowAmplified) (this.slider as any).addMark(1)
+		}
 		if (this._stream) this._updateSlider()
 	}
 
@@ -619,7 +627,7 @@ export class VolumeMixerWidgetFeature extends FeatureBase {
 			(slider.menu as any)._setSettingsVisibility(false)
 			updateMenuSeparators(slider.menu)
 			slider.menu.setHeader("audio-headphones-symbolic", _("Volume Mixer"))
-			slider.menu.open(true)
+			slider.menu.open(PopupAnimation.FULL)
 		})
 		this.maid.destroyJob(this.mixerMenuButton)
 		this.maid.connectJob(slider.menu, "menu-closed", ()=>{

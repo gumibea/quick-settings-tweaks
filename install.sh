@@ -111,7 +111,7 @@ function build() {
 	if [ -z "$VERSION" ]; then
 		VERSION=$(git branch --show-current)
 	fi
-	sed "s/version: \"unknown\"/version: \"$VERSION\"/" -i target/out/config.js
+	sed "s|version: \"unknown\"|version: \"$VERSION\"|" -i target/out/config.js
 	[ ! -z "$BUILD_NUMBER" ] && sed "s/buildNumber: 0/buildNumber: $BUILD_NUMBER/" -i target/out/config.js
 
 	# Change indents for reducing size of target

@@ -6,6 +6,11 @@ import { SystemIndicatorOrderItem } from "../../libs/types/systemIndicatorOrderI
 import { StyleClass } from "../../libs/shared/styleClass.js"
 import Maid from "../../libs/shared/maid.js"
 import Global from "../../global.js"
+import St from "gi://St"
+
+const PRIVACY_INDICATOR_STYLE_CLASS = "privacy-indicator"
+const PRIVACY_INDICATOR_USE_ACCENT_STYLE_CLASS = "QSTWEAKS-privacy-indicator-use-accent"
+const PRIVACY_INDICATOR_USE_MONOCHROME_STYLE_CLASS = "QSTWEAKS-privacy-indicator-use-monochrome"
 
 export class SystemIndicatorLayoutFeature extends FeatureBase {
 	// #region settings
@@ -56,21 +61,48 @@ export class SystemIndicatorLayoutFeature extends FeatureBase {
 	}
 
 	tracker: SystemIndicatorTracker
+	private applyPrivacyIndicatorStyle(maid: Maid, indicator: SystemIndicator): void {
+		const indicatorIcon = (indicator as any)._indicator as St.Icon|undefined
+		if (!indicatorIcon) return
+		let updating = false
+		const updateStyle = () => {
+			if (updating) return
+			updating = true
+			try {
+				indicatorIcon.remove_style_class_name(PRIVACY_INDICATOR_USE_ACCENT_STYLE_CLASS)
+				indicatorIcon.remove_style_class_name(PRIVACY_INDICATOR_USE_MONOCHROME_STYLE_CLASS)
+				if (!indicatorIcon.has_style_class_name(PRIVACY_INDICATOR_STYLE_CLASS)) return
+				if (this.privacyIndicatorStyle == "accent") {
+					indicatorIcon.add_style_class_name(PRIVACY_INDICATOR_USE_ACCENT_STYLE_CLASS)
+				} else if (this.privacyIndicatorStyle == "monochrome") {
+					indicatorIcon.add_style_class_name(PRIVACY_INDICATOR_USE_MONOCHROME_STYLE_CLASS)
+				}
+			} finally {
+				updating = false
+			}
+		}
+		updateStyle()
+		maid.connectJob(indicatorIcon, "notify::style-class", updateStyle)
+		maid.functionJob(() => {
+			indicatorIcon.remove_style_class_name(PRIVACY_INDICATOR_USE_ACCENT_STYLE_CLASS)
+			indicatorIcon.remove_style_class_name(PRIVACY_INDICATOR_USE_MONOCHROME_STYLE_CLASS)
+		})
+	}
 	override onLoad(): void {
 		// Colored privacy indicator
 		const privacyIndicatorStyle = new StyleClass(Global.Indicators.style_class)
 		if (this.privacyIndicatorStyle == "accent") {
-			privacyIndicatorStyle.add("QSTWEAKS-privacy-indicator-use-accent")
+			privacyIndicatorStyle.add(PRIVACY_INDICATOR_USE_ACCENT_STYLE_CLASS)
 		} else if (this.privacyIndicatorStyle == "monochrome") {
-			privacyIndicatorStyle.add("QSTWEAKS-privacy-indicator-use-monochrome")
+			privacyIndicatorStyle.add(PRIVACY_INDICATOR_USE_MONOCHROME_STYLE_CLASS)
 		}
 		if (privacyIndicatorStyle.modified) {
 			Global.Indicators.style_class = privacyIndicatorStyle.stringify()
 			this.maid.functionJob(()=>{
 				Global.Indicators.style_class =
 					new StyleClass(Global.Indicators.style_class)
-					.remove("QSTWEAKS-privacy-indicator-use-accent")
-					.remove("QSTWEAKS-privacy-indicator-use-monochrome")
+					.remove(PRIVACY_INDICATOR_USE_ACCENT_STYLE_CLASS)
+					.remove(PRIVACY_INDICATOR_USE_MONOCHROME_STYLE_CLASS)
 					.stringify()
 			})
 		}
@@ -103,11 +135,13 @@ export class SystemIndicatorLayoutFeature extends FeatureBase {
 			})
 		}
 
-		// Ordering
-		if (!this.orderEnabled) return
+		// Ordering and per-indicator styling
 		this.tracker = new SystemIndicatorTracker()
-		this.tracker.onIndicatorCreated = this.onIndicatorCreated.bind(this)
-		this.tracker.onUpdate = this.onUpdate.bind(this)
+		this.tracker.onIndicatorCreated = (maid, indicator) => {
+			this.applyPrivacyIndicatorStyle(maid, indicator)
+			if (this.orderEnabled) this.onIndicatorCreated(maid, indicator)
+		}
+		if (this.orderEnabled) this.tracker.onUpdate = this.onUpdate.bind(this)
 		this.tracker.load()
 	}
 	override onUnload(): void {

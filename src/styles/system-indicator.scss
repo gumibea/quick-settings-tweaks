@@ -1,9 +1,12 @@
 @use "../global.scss" as *;
 
 #panel {
+    .privacy-indicator#{$p}privacy-indicator-use-accent,
     #{$p}-privacy-indicator-use-accent .privacy-indicator {
         color: -st-accent-color;
-    }#{$p}-privacy-indicator-use-monochrome .privacy-indicator {
+    }
+    .privacy-indicator#{$p}privacy-indicator-use-monochrome,
+    #{$p}-privacy-indicator-use-monochrome .privacy-indicator {
         color: -st-accent-fg-color;
     }
     #{$p}-screen-sharing-indicator-use-accent,
