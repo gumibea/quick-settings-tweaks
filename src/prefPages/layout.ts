@@ -618,12 +618,7 @@ class SystemIndicatorOrderInfo extends OrderInfo<SystemIndicatorOrderItem> {
 	create(friendlyName: string): SystemIndicatorOrderItem {
 		return SystemIndicatorOrderItem.create(friendlyName)
 	}
-	shouldShow(item: SystemIndicatorOrderItem): boolean {
-		if (item.gtypeName == "Gjs_toggle_dndQuickToggle_DndIndicator") {
-			return (
-				this.settings.get_string("dnd-quick-toggle-indicator-position") == "system-tray"
-			)
-		}
+	shouldShow(_item: SystemIndicatorOrderItem): boolean {
 		return true
 	}
 }
