@@ -32,7 +32,7 @@ function OrderGroup<T extends OrderInfo.Base>({
 	page, dialog, bind, sensitiveBind, info
 }:{
 	page: Adw.PreferencesPage,
-	dialog: Adw.PreferencesDialog,
+	dialog: Dialog.PreferencesNavigationHost,
 	bind: string,
 	sensitiveBind: string,
 	info: OrderInfo<T>
@@ -65,7 +65,7 @@ function OrderGroup<T extends OrderInfo.Base>({
 	}
 	const editItem = (item: T)=>{
 		Dialog.StackedPage({
-			dialog,
+			host: dialog,
 			title: _("Properties of %s").format(item.friendlyName),
 			childrenRequest: (_page, _dialog)=>{
 				const editLayout = info.createEditLayout(item)

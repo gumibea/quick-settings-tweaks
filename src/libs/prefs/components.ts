@@ -102,7 +102,9 @@ export function Dialog({
 	return dialog
 }
 export namespace Dialog {
-	export type ChildrenRequest = (page: Adw.PreferencesPage, dialog: Adw.PreferencesDialog)=>any
+	/** Dialog or main preferences window — both support subpages and toasts (Libadwaita 1.6+) */
+	export type PreferencesNavigationHost = Adw.PreferencesDialog | Adw.PreferencesWindow
+	export type ChildrenRequest = (page: Adw.PreferencesPage, host: PreferencesNavigationHost)=>any
 	export interface Options {
 		title?: string
 		minHeight?: number
@@ -113,14 +115,14 @@ export namespace Dialog {
 	export const PrefDialogPage = GObject.registerClass({
 		GTypeName: "qwreey-pref-components-PrefDialogPage",
 	}, class PrefDialogPage extends Adw.PreferencesPage {
-		constructor(childrenRequest: ChildrenRequest, dialog: Adw.PreferencesDialog, title?: string) {
+		constructor(childrenRequest: ChildrenRequest, host: PreferencesNavigationHost, title?: string) {
 			super({
 				name: "PrefDialogPage",
 			})
 			if (title) {
 				this.title = title
 			}
-			addChildren(this, "add", childrenRequest(this, dialog))
+			addChildren(this, "add", childrenRequest(this, host))
 		}
 	})
 	export const PrefDialog = GObject.registerClass({
@@ -137,9 +139,9 @@ export namespace Dialog {
 			this.add(new PrefDialogPage(childrenRequest, this))
 		}
 	})
-	export function StackedPage({ title, dialog, childrenRequest }: {
+	export function StackedPage({ title, host, childrenRequest }: {
 		title: string,
-		dialog: Adw.PreferencesDialog,
+		host: PreferencesNavigationHost,
 		childrenRequest: ChildrenRequest,
 	}): Adw.NavigationPage {
 		const page = new Adw.NavigationPage({
@@ -148,10 +150,37 @@ export namespace Dialog {
 		})
 		const view = page.child = new Adw.ToolbarView()
 		view.add_top_bar(new Adw.HeaderBar())
-		view.content = new Dialog.PrefDialogPage(childrenRequest, dialog)
-		dialog.push_subpage(page)
+		view.content = new Dialog.PrefDialogPage(childrenRequest, host)
+		host.push_subpage(page)
 		return page
 	}
+}
+
+/**
+ * Opens preference content in the main {@link Adw.PreferencesWindow} subpage stack.
+ * Prefer this over a nested {@link Adw.PreferencesDialog} on GNOME Shell 50 / Libadwaita 1.6+,
+ * where modal preference dialogs opened from extension prefs often fail to present.
+ */
+export function pushPreferencesSubpage(
+	window: Adw.PreferencesWindow,
+	options: {
+		title: string,
+		minHeight?: number,
+		childrenRequest: Dialog.ChildrenRequest,
+	},
+): void {
+	const page = new Adw.NavigationPage({
+		title: options.title ?? "",
+		can_pop: true,
+	})
+	const toolbarView = new Adw.ToolbarView()
+	toolbarView.add_top_bar(new Adw.HeaderBar())
+	const prefsPage = new Dialog.PrefDialogPage(options.childrenRequest, window)
+	toolbarView.set_content(prefsPage)
+	page.child = toolbarView
+	if (options.minHeight)
+		page.height_request = options.minHeight
+	window.push_subpage(page)
 }
 // #endregion Dialog
 
@@ -334,20 +363,28 @@ export function DialogRow(options: DialogRow.Options): Adw.ActionRow {
 	return Row({
 		...options,
 		action: () => {
-			const dialog = Dialog({
-				...options,
-				title: options.dialogTitle,
-			})
-			if (options.onDialogCreated) {
-				options.onDialogCreated(dialog)
+			const win = options.window
+			if (typeof (win as any).push_subpage === "function") {
+				pushPreferencesSubpage(win, {
+					title: options.dialogTitle ?? "",
+					minHeight: options.minHeight,
+					childrenRequest: options.childrenRequest,
+				})
+			} else {
+				Dialog({
+					...options,
+					title: options.dialogTitle,
+					usePopup: true,
+				})
 			}
-		}
+		},
 	})
 }
 export namespace DialogRow {
 	export interface Options extends Dialog.Options, Row.Options {
 		dialogTitle?: string
-		onDialogCreated?: (dialog: Adw.PreferencesDialog)=>void
+		/** Not used; content is shown as a main-window subpage instead of a modal dialog. */
+		onDialogCreated?: (dialog: Adw.PreferencesDialog|null)=>void
 	}
 }
 // #endregion DialogRow
