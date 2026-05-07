@@ -166,6 +166,8 @@ export function ExperimentalIcon(options?: ExperimentalIcon.Options): Gtk.Image 
 		opacity: 0.8,
 		has_tooltip: true,
 		tooltip_text: _("This feature marked as experimental"),
+		// Let clicks reach the row / activatable widget (GTK 4 + Libadwaita 1.6+)
+		can_target: false,
 	})
 }
 export namespace ExperimentalIcon {
@@ -228,24 +230,42 @@ export function Row({
 	const row = new Adw.ActionRow({
 		title: title ?? null,
 		subtitle: subtitle ?? null,
-		activatable: (!!uri) || (!!action),
 	})
 	if (parent) {
 		parent.add(row)
 	}
 	if (uri) {
-		row.connect("activated", ()=>{
+		const linkButton = new Gtk.Button({
+			has_frame: false,
+			valign: Gtk.Align.CENTER,
+			tooltip_text: uri,
+			has_tooltip: true,
+		})
+		if (!noLinkIcon) {
+			linkButton.icon_name = "adw-external-link-symbolic"
+		} else {
+			linkButton.label = _("Open")
+		}
+		linkButton.connect("clicked", ()=>{
 			Gio.AppInfo.launch_default_for_uri_async(uri, null, null, null)
 		})
+		row.add_suffix(linkButton)
+		row.set_activatable_widget(linkButton)
 		setLinkCursor(row)
-		if (!noLinkIcon) Row.addSuffixIcon(row, "adw-external-link-symbolic")
-		row.tooltip_text = uri
-		row.has_tooltip = true
-	}
-	if (action) {
-		row.connect("activated", ()=>action())
+	} else if (action) {
+		const openButton = new Gtk.Button({
+			has_frame: false,
+			valign: Gtk.Align.CENTER,
+		})
+		if (!noLinkIcon) {
+			openButton.icon_name = "go-next-symbolic"
+		} else {
+			openButton.label = _("Open")
+		}
+		openButton.connect("clicked", ()=>action())
+		row.add_suffix(openButton)
+		row.set_activatable_widget(openButton)
 		setLinkCursor(row)
-		if (!noLinkIcon) Row.addSuffixIcon(row, "go-next-symbolic")
 	}
 	if (icon) Row.appendLinkIcon(row, icon)
 	if (suffix) {
@@ -292,6 +312,7 @@ export namespace Row {
 			margin_start: 2,
 			margin_end: 2,
 			halign: Gtk.Align.START,
+			can_target: false,
 		})
 		image.insert_before(row.child, linkText)
 	}
@@ -302,6 +323,7 @@ export namespace Row {
 			pixel_size: 16,
 			margin_end: 4,
 			valign: Gtk.Align.CENTER,
+			can_target: false,
 		}))
 	}
 }
